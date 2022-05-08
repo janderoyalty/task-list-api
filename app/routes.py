@@ -1,4 +1,3 @@
-from crypt import methods
 import json
 from app import db
 from app.models.helper import validate_task
@@ -27,18 +26,13 @@ def create_tasks():
 # GET ALL TASKS
 @tasks_bp.route("", methods = ["GET"])
 def get_all_tasks():
-    title_query = request.args.get("title")
-    description_query = request.args.get("description")
-    completed_query = request.args.get("is_complete")
-
-    if title_query:
-        tasks = Task.query.filter_by(title = title_query)
-    elif description_query:
-        tasks = Task.query.filter_by(description = description_query)
-    elif completed_query:
-        tasks = Task.query.filter_by(is_complete = completed_query)
+    # TITLE QUERIES
+    if request.args.get("sort") == "asc":
+        tasks = Task.query.order_by(Task.title.asc())
+    elif request.args.get("sort") == "desc":
+        tasks = Task.query.order_by(Task.title.desc())
     else:
-        tasks = Task.query.all()  
+        tasks = Task.query.all()
 
     tasks_response = []
     for task in tasks:
@@ -74,3 +68,5 @@ def delete_task(id):
     db.session.commit()
         
     return jsonify({"details":f'Task {id} "{task.to_json()["title"]}" successfully deleted'}), 200
+
+# SORT
