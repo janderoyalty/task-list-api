@@ -1,3 +1,4 @@
+from datetime import datetime
 from app import db
 
 
@@ -34,6 +35,26 @@ class Task(db.Model):
         new_task = cls(
             title = request_body["title"],
             description = request_body["description"]
+        )
+
+        return new_task
+
+    # MARK
+    def patch_complete(self, request_body):
+        self.completed_at = datetime.utcnow()
+
+    # MARK
+    def patch_imcomplete(self, request_body):
+        self.completed_at = None
+
+
+    # CREATE
+    @classmethod
+    def create_task_complete(cls, request_body):
+        new_task = cls(
+            title = request_body["title"],
+            description = request_body["description"],
+            completed_at = datetime.utcnow()
         )
 
         return new_task

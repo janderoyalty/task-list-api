@@ -13,7 +13,12 @@ def create_tasks():
     request_body = request.get_json()
 
     try:
-        new_task = Task.create(request_body)
+        if request_body["title"] or request_body["description"]:
+            new_task = Task.create(request_body)
+        elif request_body["completed_at"]:
+            new_task = Task.create_task_complete(request_body)
+            # new_task["completed_at"] = Task.datetime.utcnow()
+
     except KeyError:
         return make_response({"details": "Invalid data"}), 400
 
@@ -23,10 +28,11 @@ def create_tasks():
     return jsonify({"task":new_task.to_json()}), 201
 
 
+
 # GET ALL TASKS
 @tasks_bp.route("", methods = ["GET"])
 def get_all_tasks():
-    # TITLE QUERIES
+    # SORT
     if request.args.get("sort") == "asc":
         tasks = Task.query.order_by(Task.title.asc())
     elif request.args.get("sort") == "desc":
@@ -62,11 +68,36 @@ def update_task(id):
 # DELETE
 @tasks_bp.route("/<id>", methods = ["DELETE"])
 def delete_task(id):
-    task = validate_task(id) # can i make this a global variable?
+    task = validate_task(id)
 
     db.session.delete(task)
     db.session.commit()
         
     return jsonify({"details":f'Task {id} "{task.to_json()["title"]}" successfully deleted'}), 200
 
-# SORT
+# IS MARKED
+@tasks_bp.route("/<id>/mark_complete", methods = ["PATCH"])
+def mark_completed(id):
+    task = validate_task(id) # can i make this a global variable?
+
+    request_body = request.get_json()
+
+    task.patch_complete(request_body)
+
+    db.session.commit()
+
+    return jsonify({"task":task.to_json()}), 200
+
+
+@tasks_bp.route("/<id>/mark_incomplete", methods = ["PATCH"])
+def mark_imcompleted(id):
+    task = validate_task(id) # can i make this a global variable?
+
+    request_body = request.get_json()
+
+    task.patch_imcomplete(request_body)
+
+    db.session.commit()
+
+    return jsonify({"task":task.to_json()}), 200
+
