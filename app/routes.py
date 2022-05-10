@@ -15,10 +15,6 @@ def create_tasks():
     try:
         if request_body["title"] or request_body["description"]:
             new_task = Task.create(request_body)
-        elif request_body["completed_at"]:
-            new_task = Task.create_task_complete(request_body)
-            # new_task["completed_at"] = Task.datetime.utcnow()
-
     except KeyError:
         return make_response({"details": "Invalid data"}), 400
 
