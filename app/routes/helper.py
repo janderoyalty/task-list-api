@@ -1,5 +1,5 @@
 from flask import abort, make_response
-from .task import Task
+from ..models.task import Task
 
 def validate_task(id):
 	try:

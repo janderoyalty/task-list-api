@@ -1,6 +1,5 @@
-from email import header
 from app import db
-from app.models.helper import validate_task
+from app.routes.helper import validate_task
 from app.models.task import Task
 from flask import Blueprint, jsonify, make_response, request
 import requests
@@ -72,7 +71,7 @@ def delete_task(id):
         
     return jsonify({"details":f'Task {id} "{task.to_json()["title"]}" successfully deleted'}), 200
 
-# IS MARKED
+# MARKED COMPLETED - SEND TO SLACK
 @tasks_bp.route("/<id>/mark_complete", methods = ["PATCH"])
 def mark_completed(id):
     task = validate_task(id) # can i make this a global variable?
@@ -85,15 +84,14 @@ def mark_completed(id):
 
     query_params = {
     "channel": "test-channel",
-    "text": f"Sourbeer just completed the task {request_body['title']}"
+    "text": f"Someone just completed the task {task.title}"
 }
     headers = {"Authorization": os.environ.get("SLACK_BOT_KEY")}
     
     response_bot = requests.post(SLACK_BOT_POST_PATH, params=query_params, headers=headers)
-
     return jsonify({"task":task.to_json()}), 200
 
-
+# MARK INCOMPLETE
 @tasks_bp.route("/<id>/mark_incomplete", methods = ["PATCH"])
 def mark_imcompleted(id):
     task = validate_task(id) # can i make this a global variable?
