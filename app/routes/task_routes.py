@@ -1,29 +1,11 @@
-from email import header
 from app import db
-from app.models.helper import validate_task
+from app.routes.helper import validate_task
 from app.models.task import Task
 from flask import Blueprint, jsonify, make_response, request
 import requests
 import os
 
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
-
-
-# CREATE TASK
-@tasks_bp.route("", methods = ["POST"])
-def create_tasks():
-    request_body = request.get_json()
-
-    try:
-        new_task = Task.create(request_body)
-    except KeyError:
-        return make_response({"details": "Invalid data"}), 400
-
-    db.session.add(new_task)
-    db.session.commit()
-
-    return jsonify({"task":new_task.to_json()}), 201
-
 
 
 # GET ALL TASKS
@@ -37,9 +19,8 @@ def get_all_tasks():
     else:
         tasks = Task.query.all()
 
-    tasks_response = []
-    for task in tasks:
-        tasks_response.append(task.to_json())
+    tasks_response = [task.to_json() for task in tasks]
+
     return jsonify(tasks_response), 200
 
 
@@ -49,18 +30,33 @@ def get_one_task(id):
     task = validate_task(id)
     return jsonify({"task":task.to_json()}), 200
 
+
+# CREATE TASK
+@tasks_bp.route("", methods = ["POST"])
+def create_tasks():
+    request_body = request.get_json()
+    try:
+        new_task = Task.create(request_body)
+    except KeyError:
+        return make_response({"details": "Invalid data"}), 400
+
+    db.session.add(new_task)
+    db.session.commit()
+
+    return jsonify({"task":new_task.to_json()}), 201
+
+
 # UPDATE ONE TASK
 @tasks_bp.route("/<id>", methods = ["PUT"])
 def update_task(id):
     task = validate_task(id) # can i make this a global variable?
-
     request_body = request.get_json()
-
     task.update(request_body)
 
     db.session.commit()
 
     return jsonify({"task":task.to_json()}), 200
+
 
 # DELETE
 @tasks_bp.route("/<id>", methods = ["DELETE"])
@@ -72,7 +68,8 @@ def delete_task(id):
         
     return jsonify({"details":f'Task {id} "{task.to_json()["title"]}" successfully deleted'}), 200
 
-# IS MARKED
+
+# MARKED COMPLETED - SEND TO SLACK
 @tasks_bp.route("/<id>/mark_complete", methods = ["PATCH"])
 def mark_completed(id):
     task = validate_task(id) # can i make this a global variable?
@@ -85,15 +82,15 @@ def mark_completed(id):
 
     query_params = {
     "channel": "test-channel",
-    "text": f"Sourbeer just completed the task {request_body['title']}"
+    "text": f"Someone just completed the task {task.title}"
 }
     headers = {"Authorization": os.environ.get("SLACK_BOT_KEY")}
     
     response_bot = requests.post(SLACK_BOT_POST_PATH, params=query_params, headers=headers)
-
     return jsonify({"task":task.to_json()}), 200
 
 
+# MARK INCOMPLETE
 @tasks_bp.route("/<id>/mark_incomplete", methods = ["PATCH"])
 def mark_imcompleted(id):
     task = validate_task(id) # can i make this a global variable?
