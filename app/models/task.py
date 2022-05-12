@@ -7,18 +7,31 @@ class Task(db.Model):
     title = db.Column(db.String)
     description = db.Column(db.String)
     completed_at = db.Column(db.DateTime)
+    # CHILD - MANY TO ONE
+    goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=True)
+    goal = db.relationship("Goal", back_populates="tasks")
 
+#       caretaker_id = db.Column(db.Integer, db.ForeignKey('caretaker.id'))
+#   caretaker = db.relationship("Caretaker", back_populates="cats")
 
     # TURN TO JSON
     def to_json(self):
         is_complete = True if self.completed_at else False;
-        
-        return{
-                "id": self.task_id,
-                "title": self.title,
-                "description" : self.description,
-                "is_complete" : is_complete
-        }
+        if self.goal_id:
+            return{
+                    "id": self.task_id,
+                    "title": self.title,
+                    "description" : self.description,
+                    "is_complete" : is_complete,
+                    "goal_id" : self.goal_id
+            }
+        else:
+            return{
+                    "id": self.task_id,
+                    "title": self.title,
+                    "description" : self.description,
+                    "is_complete" : is_complete
+            }
 
 
     # UPDATE
@@ -47,7 +60,6 @@ class Task(db.Model):
 
     # MARK
     def patch_complete(self, request_body):
-
         self.completed_at = datetime.utcnow()
 
     # MARK
