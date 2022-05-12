@@ -84,7 +84,6 @@ def create_task_in_goal(id):
     for task in list_of_tasks:
         if task not in goal.tasks:
             goal.tasks.append(task)
-    print(f"**************{goal.tasks}***************")
     db.session.commit()
 
     return jsonify({"id": goal.id, "task_ids": request_body["task_ids"]}), 200
@@ -94,5 +93,5 @@ def create_task_in_goal(id):
 @goals_bp.route("/<id>/tasks", methods = ["GET"])
 def get_all_tasks_in_goal(id):
     goal = validate_goal(id)
-    goal_task = [Task.to_json(goal) for goal in goal.tasks]
+    goal_task = [Task.to_json(task) for task in goal.tasks]
     return jsonify({"id":goal.id, "title":goal.title, "tasks":goal_task}), 200    
