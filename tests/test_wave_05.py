@@ -64,7 +64,6 @@ def test_get_goal_not_found(client):
 
     # ---- Complete Test ----
 
-
 # @pytest.mark.skip(reason="No way to test this feature yet")
 def test_create_goal(client):
     # Act
@@ -184,3 +183,15 @@ def test_create_goal_missing_title(client):
     assert response_body == {
         "details": "Invalid data"
     }
+
+# *****ADDED TEST TO FOR INVALID INPUT****
+# Wanted to get my coverage up for helper.py.
+# Now 100% coverage
+def test_get_goal_invalid_input(client):
+    # Act
+    response = client.get("/goals/house")
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 400
+    assert response_body == {"message": "goal house is invalid"}

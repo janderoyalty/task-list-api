@@ -11,32 +11,24 @@ class Task(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=True)
     goal = db.relationship("Goal", back_populates="tasks")
 
-#       caretaker_id = db.Column(db.Integer, db.ForeignKey('caretaker.id'))
-#   caretaker = db.relationship("Caretaker", back_populates="cats")
 
     # TURN TO JSON
-    def to_json(self):
-        is_complete = True if self.completed_at else False;
+    def t_json(self):
+        tast_dict = {
+                "id": self.task_id,
+                "title": self.title,
+                "description" : self.description,
+                "is_complete" : True if self.completed_at else False
+        }
+
         if self.goal_id:
-            return{
-                    "id": self.task_id,
-                    "title": self.title,
-                    "description" : self.description,
-                    "is_complete" : is_complete,
-                    "goal_id" : self.goal_id
-            }
-        else:
-            return{
-                    "id": self.task_id,
-                    "title": self.title,
-                    "description" : self.description,
-                    "is_complete" : is_complete
-            }
+            tast_dict["goal_id"] = self.goal_id
+
+        return tast_dict
 
 
     # UPDATE
     def update(self, request_body):
-        # is_complete = True if self.completed_at else None;
         self.title = request_body["title"]
         self.description = request_body["description"]
 
@@ -44,25 +36,16 @@ class Task(db.Model):
     # CREATE
     @classmethod
     def create(cls, request_body):
-        if "completed_at" in request_body:
-            new_task = cls(
-                title = request_body["title"],
-                description = request_body["description"],
-                completed_at = request_body["completed_at"]
-            )
-        else:
-            new_task = cls(
-                title = request_body["title"],
-                description = request_body["description"],
-            )
-
-        return new_task
+        return cls(
+            title = request_body["title"],
+            description = request_body["description"],
+            completed_at = request_body.get("completed_at", None))
 
     # MARK
-    def patch_complete(self, request_body):
-        self.completed_at = datetime.utcnow()
+    def patch_complete(self):
+        self.completed_at = datetime.now()
 
     # MARK
-    def patch_imcomplete(self, request_body):
+    def patch_imcomplete(self):
         self.completed_at = None
 

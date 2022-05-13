@@ -201,3 +201,16 @@ def test_create_task_must_contain_description(client):
         "details": "Invalid data"
     }
     assert Task.query.all() == []
+
+# *****ADDED TEST TO FOR INVALID INPUT****
+# Wanted to get my coverage up for helper.py.
+# Now 100% coverage
+def test_get_task_invalid_input(client):
+    # Act
+    response = client.get("/tasks/house")
+    response_body = response.get_json()
+
+    # Assert
+    assert response.status_code == 400
+    assert response_body == {"message": "task house is invalid"}
+

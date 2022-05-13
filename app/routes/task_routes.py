@@ -8,18 +8,19 @@ import os
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
 
-# GET ALL TASKS
+# GET ALL TASKS - "/tasks" - GET
 @tasks_bp.route("", methods = ["GET"])
 def get_all_tasks():
     # SORT
-    if request.args.get("sort") == "asc":
+    sort = request.args.get("sort")
+    if sort == "asc":
         tasks = Task.query.order_by(Task.title.asc())
-    elif request.args.get("sort") == "desc":
+    elif sort == "desc":
         tasks = Task.query.order_by(Task.title.desc())
     else:
         tasks = Task.query.all()
 
-    tasks_response = [task.to_json() for task in tasks]
+    tasks_response = [task.t_json() for task in tasks]
 
     return jsonify(tasks_response), 200
 
@@ -28,7 +29,7 @@ def get_all_tasks():
 @tasks_bp.route("/<id>", methods = ["GET"])
 def get_one_task(id):
     task = validate_task(id)
-    return jsonify({"task":task.to_json()}), 200
+    return jsonify({"task":task.t_json()}), 200
 
 
 # CREATE TASK
@@ -43,10 +44,10 @@ def create_tasks():
     db.session.add(new_task)
     db.session.commit()
 
-    return jsonify({"task":new_task.to_json()}), 201
+    return jsonify({"task":new_task.t_json()}), 201
 
 
-# UPDATE ONE TASK
+# UPDATE ONE TASK - "/tasks/1" - PUT
 @tasks_bp.route("/<id>", methods = ["PUT"])
 def update_task(id):
     task = validate_task(id) # can i make this a global variable?
@@ -55,10 +56,10 @@ def update_task(id):
 
     db.session.commit()
 
-    return jsonify({"task":task.to_json()}), 200
+    return jsonify({"task":task.t_json()}), 200
 
 
-# DELETE
+# DELETE - "/tasks/1" - DELETE
 @tasks_bp.route("/<id>", methods = ["DELETE"])
 def delete_task(id):
     task = validate_task(id)
@@ -66,15 +67,14 @@ def delete_task(id):
     db.session.delete(task)
     db.session.commit()
         
-    return jsonify({"details":f'Task {id} "{task.to_json()["title"]}" successfully deleted'}), 200
+    return jsonify({"details":f'Task {id} "{task.t_json()["title"]}" successfully deleted'}), 200
 
 
-# MARKED COMPLETED - SEND TO SLACK
+# MARKED COMPLETED (SEND TO SLACK) - "/tasks/1/mark_complete" - PATCH
 @tasks_bp.route("/<id>/mark_complete", methods = ["PATCH"])
 def mark_completed(id):
     task = validate_task(id) # can i make this a global variable?
-    request_body = request.get_json()
-    task.patch_complete(request_body)
+    task.patch_complete()
 
     db.session.commit()
 
@@ -87,19 +87,16 @@ def mark_completed(id):
     headers = {"Authorization": os.environ.get("SLACK_BOT_KEY")}
     
     response_bot = requests.post(SLACK_BOT_POST_PATH, params=query_params, headers=headers)
-    return jsonify({"task":task.to_json()}), 200
+    return jsonify({"task":task.t_json()}), 200
 
 
-# MARK INCOMPLETE
+# MARK INCOMPLETE - "/tasks/1/mark_incomplete" - PATCH
 @tasks_bp.route("/<id>/mark_incomplete", methods = ["PATCH"])
 def mark_imcompleted(id):
-    task = validate_task(id) # can i make this a global variable?
-
-    request_body = request.get_json()
-
-    task.patch_imcomplete(request_body)
+    task = validate_task(id)
+    task.patch_imcomplete()
 
     db.session.commit()
 
-    return jsonify({"task":task.to_json()}), 200
+    return jsonify({"task":task.t_json()}), 200
 

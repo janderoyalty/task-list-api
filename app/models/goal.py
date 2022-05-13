@@ -7,6 +7,7 @@ class Goal(db.Model):
     # PARENT - ONE TO MANY
     tasks = db.relationship("Task", back_populates="goal", lazy=True)
 
+
     # TURN INTO JSON
     def g_json(self):
         return {
@@ -14,6 +15,7 @@ class Goal(db.Model):
             "title": self.title
         }
 
+    # CREATE GOAL
     @classmethod
     def create(cls, request_body):
         new_goal = cls(
@@ -23,7 +25,7 @@ class Goal(db.Model):
 
 
     # UPDATE GOAL
-    def update_goal(self, request_body):
+    def update(self, request_body):
         self.title =  request_body["title"]
         
 
