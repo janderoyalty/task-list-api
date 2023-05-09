@@ -19,16 +19,16 @@ def validate_task(id):
 	return task
 
 
-def validate_goal(id):
+def validate_goal(goal_id):
 	try:
-		id = int(id)
+		goal_id = int(goal_id)
 	except:
-		return abort(make_response({"message": f"goal {id} is invalid"}, 400))
+		return abort(make_response({"message": f"goal {goal_id} is invalid"}, 400))
 
-	goal = Goal.query.get(id)
+	goal = Goal.query.get(goal_id)
 
 	if not goal:
-		abort(make_response({"message": f"goal {id} not found"}, 404))
+		abort(make_response({"message": f"goal {goal_id} not found"}, 404))
 
 	return goal
 

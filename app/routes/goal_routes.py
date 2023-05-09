@@ -16,11 +16,14 @@ def get_all_goals():
 
 
 # GET ONE GOAL - "/goals/1" - GET
-@goals_bp.route("/<id>", methods = ["GET"])
-def get_one_goal(id):
-    goal = validate_goal(id)
+@goals_bp.route("/<goal_id>", methods = ["GET"])
+def get_one_goal(goal_id):
+    goal = validate_goal(goal_id)
     
-    return jsonify({"goal": goal.g_json()}), 200
+    return jsonify({"goal": {
+            "id": goal_id,
+            "title": goal.title
+        }}), 200
 
 
 # CREATE GOAL - "/goals" - POST
@@ -74,6 +77,9 @@ def create_task_in_goal(id):
         list_of_tasks.append(task)
 
     [goal.tasks.append(task) for task in list_of_tasks if task not in goal.tasks]
+    # for task in list_of_tasks:
+    #     if task not in goal.tasks:
+    #         goal.tasks.append(task)
             
     db.session.commit()
 
@@ -85,5 +91,8 @@ def create_task_in_goal(id):
 def get_all_tasks_in_goal(id):
     goal = validate_goal(id)
     goal_task = [Task.t_json(task) for task in goal.tasks]
+    # goal_task = []
+    # for task in goal.tasks:
+    #     Task.t_json(task)
     
     return jsonify({"id":goal.id, "title":goal.title, "tasks":goal_task}), 200    

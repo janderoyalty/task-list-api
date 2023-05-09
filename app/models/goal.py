@@ -2,7 +2,7 @@ from app import db
 
 
 class Goal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    goal_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     # PARENT - ONE TO MANY
     tasks = db.relationship("Task", back_populates="goal", lazy=True)
@@ -11,7 +11,7 @@ class Goal(db.Model):
     # TURN INTO JSON
     def g_json(self):
         return {
-            "id": self.id,
+            "id": self.goal_id,
             "title": self.title
         }
 
